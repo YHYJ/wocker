@@ -9,16 +9,23 @@ Description: 创建 docker 客户端
 
 package general
 
-import "github.com/docker/docker/client"
+import (
+	"github.com/docker/docker/client"
+	"github.com/gookit/color"
+)
 
 // DockerClient 创建 docker 客户端
 //
 // 返回：
 //   - docker 客户端
-//   - 错误信息
-func DockerClient() (*client.Client, error) {
+func DockerClient() *client.Client {
 	docker, err := client.NewClientWithOpts(client.FromEnv)
 	defer docker.Close()
 
-	return docker, err
+	if err != nil {
+		fileName, lineNo := GetCallerInfo()
+		color.Printf("%s %s %s\n", DangerText(ErrorInfoFlag), SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
+	}
+
+	return docker
 }
