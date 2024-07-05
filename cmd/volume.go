@@ -17,32 +17,32 @@ import (
 // volumeCmd represents the volume command
 var volumeCmd = &cobra.Command{
 	Use:   "volume",
-	Short: "Backup or restore docker volumes",
-	Long:  `Create a volume backup file with a timestamp, or use a backup file to restore the volume.`,
+	Short: "Manage docker volumes",
+	Long:  `Specify or interactively manage daocker volumes.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// 解析参数
 		listFlag, _ := cmd.Flags().GetBool("list")
-		backupFlag, _ := cmd.Flags().GetBool("backup")
-		restoreFlag, _ := cmd.Flags().GetBool("restore")
+		saveFlag, _ := cmd.Flags().GetBool("save")
+		loadFlag, _ := cmd.Flags().GetBool("load")
 
 		if listFlag {
 			cli.ListVolume()
 		}
 
-		if backupFlag {
-			cli.BackupVolume(args)
+		if saveFlag {
+			cli.SaveVolume(args)
 		}
 
-		if restoreFlag {
-			cli.RestoreVolume(args[0])
+		if loadFlag {
+			cli.LoadVolume(args[0])
 		}
 	},
 }
 
 func init() {
-	volumeCmd.Flags().Bool("list", false, "List volumes")
-	volumeCmd.Flags().Bool("backup", false, "Backup volumes, for example: '--backup volume1 volume2' or '--backup all'")
-	volumeCmd.Flags().Bool("restore", false, "Restore volumes, for example: '--restore volume_backfile1 volume_backfile2'")
+	volumeCmd.Flags().Bool("list", false, "List all volumes")
+	volumeCmd.Flags().Bool("save", false, "Save one or more volumes with timestamp to a tar archive and compress it, for example: '--save volume1 volume2' or '--save all'")
+	volumeCmd.Flags().Bool("load", false, "Load a volume from a tar archive, for example: '--load volume_backfile1 volume_backfile2'")
 
 	volumeCmd.Flags().BoolP("help", "h", false, "help for volume command")
 	rootCmd.AddCommand(volumeCmd)

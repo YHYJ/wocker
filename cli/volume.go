@@ -9,6 +9,8 @@ Description: 子命令 'volume' 的实现
 
 package cli
 
-func ListVolume()                {}
-func BackupVolume(name []string) {}
-func RestoreVolume(file string)  {}
+func ListVolume() {}
+
+func SaveVolume(name []string) {}
+
+func LoadVolume(file string) {}
