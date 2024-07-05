@@ -17,32 +17,32 @@ import (
 // imageCmd represents the image command
 var imageCmd = &cobra.Command{
 	Use:   "image",
-	Short: "Backup or restore docker image",
-	Long:  `Create an image backup file with TAG and ID, or use a backup file to restore the image.`,
+	Short: "Manage docker images",
+	Long:  `Specify or interactively manage daocker images.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// 解析参数
 		listFlag, _ := cmd.Flags().GetBool("list")
-		backupFlag, _ := cmd.Flags().GetBool("backup")
-		restoreFlag, _ := cmd.Flags().GetBool("restore")
-		if listFlag {
+		saveFlag, _ := cmd.Flags().GetBool("save")
+		loadFlag, _ := cmd.Flags().GetBool("load")
 
+		if listFlag {
 			cli.ListImage()
 		}
 
-		if backupFlag {
-			cli.BackupImage(args)
+		if saveFlag {
+			cli.SaveImage(args)
 		}
 
-		if restoreFlag {
-			cli.RestoreImage(args[0])
+		if loadFlag {
+			cli.LoadImage(args[0])
 		}
 	},
 }
 
 func init() {
-	imageCmd.Flags().Bool("list", false, "List images")
-	imageCmd.Flags().Bool("backup", false, "Backup images, for example: '--backup image1 image2' or '--backup all'")
-	imageCmd.Flags().Bool("restore", false, "Restore images, for example: '--restore image_backfile1 image_backfile2'")
+	imageCmd.Flags().Bool("list", false, "List all images")
+	imageCmd.Flags().Bool("save", false, "Save one or more images with TAG and ID to a tar archive and compress it, for example: '--save image1 image2' or '--save all'")
+	imageCmd.Flags().Bool("load", false, "Load an image from a tar archive, for example: '--load image_backfile1 image_backfile2'")
 
 	imageCmd.Flags().BoolP("help", "h", false, "help for image command")
 	rootCmd.AddCommand(imageCmd)
