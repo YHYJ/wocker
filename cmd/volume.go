@@ -41,8 +41,8 @@ var volumeCmd = &cobra.Command{
 
 func init() {
 	volumeCmd.Flags().Bool("list", false, "List all volumes")
-	volumeCmd.Flags().Bool("save", false, "Save one or more volumes with timestamp to a tar archive and compress it, for example: '--save volume1 volume2' or '--save all'")
-	volumeCmd.Flags().Bool("load", false, "Load a volume from a tar archive, for example: '--load volume_backfile1 volume_backfile2'")
+	volumeCmd.Flags().Bool("save", false, "Save one or more volumes with timestamp to a tar archive, for example: '--save volume1 volume2' or '--save all'")
+	volumeCmd.Flags().Bool("load", false, "Load a volume from a tar archive, for example: '--load volume1_archive volume2_archive'")
 
 	volumeCmd.Flags().BoolP("help", "h", false, "help for volume command")
 	rootCmd.AddCommand(volumeCmd)

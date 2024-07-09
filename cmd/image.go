@@ -30,7 +30,7 @@ var imageCmd = &cobra.Command{
 		}
 
 		if saveFlag {
-			cli.SaveImage(args)
+			cli.SaveImages(args...)
 		}
 
 		if loadFlag {
@@ -41,8 +41,8 @@ var imageCmd = &cobra.Command{
 
 func init() {
 	imageCmd.Flags().Bool("list", false, "List all images")
-	imageCmd.Flags().Bool("save", false, "Save one or more images with TAG and ID to a tar archive and compress it, for example: '--save image1 image2' or '--save all'")
-	imageCmd.Flags().Bool("load", false, "Load an image from a tar archive, for example: '--load image_backfile1 image_backfile2'")
+	imageCmd.Flags().Bool("save", false, "Save one or more images with TAG and ID to a tar archive, for example: '--save image1 image2' or '--save all'")
+	imageCmd.Flags().Bool("load", false, "Load an image from a tar archive, for example: '--load image1_archive image2_archive'")
 
 	imageCmd.Flags().BoolP("help", "h", false, "help for image command")
 	rootCmd.AddCommand(imageCmd)
