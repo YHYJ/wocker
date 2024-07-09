@@ -21,22 +21,3 @@ import "time"
 func UnixTime2TimeString(unixTime int64) string {
 	return time.Unix(unixTime, 0).Format("2006-01-02 15:04:05")
 }
-
-// ParseDateTime 按照指定格式将字符串解析为日期/时间
-//
-// 参数：
-//   - format: 解析时间日期的格式
-//   - datetimeStr: 待解析的日期时间字符串
-//
-// 返回：
-//   - time.Parse 解析结果
-//   - 错误信息
-func ParseDateTime(format, datetimeStr string) (time.Time, error) {
-	// 解析时间字符串
-	parsedTime, err := time.Parse(format, datetimeStr)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	return parsedTime, nil
-}

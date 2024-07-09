@@ -33,21 +33,19 @@ func ListVolume() {
 	var (
 		name       string
 		driver     string
-		createdat  string
 		mountpoint string
 	)
 
-	tableHeader := []string{"Name", "Driver", "CreatedAt", "Mountpoint"} // 表头
-	tableData := [][]string{}                                            // 表数据
-	rowData := []string{}                                                // 行数据
+	tableHeader := []string{"Name", "Driver", "Mountpoint"} // 表头
+	tableData := [][]string{}                               // 表数据
+	rowData := []string{}                                   // 行数据
 	for _, volume := range volumes.Volumes {
 		// 列数据赋值
 		name = volume.Name
 		driver = volume.Driver
-		createdat = volume.CreatedAt
 		mountpoint = volume.Mountpoint
 		// 组装行数据
-		rowData = []string{name, driver, createdat, mountpoint}
+		rowData = []string{name, driver, mountpoint}
 		tableData = append(tableData, rowData)
 	}
 
