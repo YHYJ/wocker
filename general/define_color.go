@@ -9,7 +9,10 @@ Description: 定义输出颜色
 
 package general
 
-import "github.com/gookit/color"
+import (
+	"github.com/charmbracelet/lipgloss"
+	"github.com/gookit/color"
+)
 
 var (
 	FgBlackText        = color.FgBlack.Render        // 前景色 - 黑色
@@ -58,4 +61,21 @@ var (
 	WarnText      = color.Warn.Render      // Warn 文本
 	QuestionText  = color.Question.Render  // Question 文本
 	SecondaryText = color.Secondary.Render // Secondary 文本
+)
+
+// Tab 专用
+const (
+	TabLightColor = "#874BFD"
+	TabDarkColor  = "#7D56F4"
+)
+
+//  Table 专用
+
+// Notice: NEW
+const (
+	HeaderColor    = lipgloss.Color("#CCCCCC") // 表头颜色
+	BorderColor    = lipgloss.Color("#6C757D") // 边框颜色
+	ColumnOneColor = lipgloss.Color("#555555") // 第一列颜色
+
+	DefaultColor = lipgloss.Color("#FFFFFF") // 默认颜色
 )
