@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	Name    string = "Manager"                 // 程序名
-	Version string = "v0.0.1"                  // 程序版本
-	Project string = "github.com/yhyj/manager" // 项目地址
+	Name    string = "Wocker"                 // 程序名
+	Version string = "v0.0.0"                 // 程序版本
+	Project string = "github.com/yhyj/wocker" // 项目地址
 )
 
 var (
