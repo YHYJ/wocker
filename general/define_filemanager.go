@@ -76,14 +76,14 @@ func FileExist(filePath string) bool {
 //   - 错误信息
 func EmptyFile(filePath string) error {
 	// 打开文件，如果不存在则创建，文件权限为读写
-	text, err := os.OpenFile(filePath, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0666)
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}
-	defer text.Close()
+	defer file.Close()
 
 	// 清空文件内容
-	if err := text.Truncate(0); err != nil {
+	if err := file.Truncate(0); err != nil {
 		return err
 	}
 	return nil
@@ -124,16 +124,19 @@ func ListFolderFiles(folderPath string) ([]string, error) {
 	return files, nil
 }
 
-// CreateFile 创建文件，包括其父目录
+// ReCreateFile 创建文件，包括其父目录，如果文件存在则重建
 //
 // 参数：
 //   - file: 文件路径
 //
 // 返回：
 //   - 错误信息
-func CreateFile(filePath string) (*os.File, error) {
+func ReCreateFile(filePath string) (*os.File, error) {
 	if FileExist(filePath) {
-		return nil, nil
+		// 清空文件内容
+		if err := DeleteFile(filePath); err != nil {
+			return nil, err
+		}
 	}
 	// 创建父目录
 	folderPath := filepath.Dir(filePath)

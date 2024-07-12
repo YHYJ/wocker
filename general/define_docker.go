@@ -51,7 +51,7 @@ func SaveImage(docker *client.Client, imageID string, filename string) error {
 	defer reader.Close()
 
 	// 创建文件
-	file, err := CreateFile(filename)
+	file, err := ReCreateFile(filename)
 	if err != nil {
 		return err
 	}
