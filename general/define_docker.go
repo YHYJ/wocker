@@ -22,7 +22,7 @@ import (
 // 返回：
 //   - docker 客户端
 func DockerClient() *client.Client {
-	docker, err := client.NewClientWithOpts(client.FromEnv)
+	docker, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	defer docker.Close()
 
 	if err != nil {
