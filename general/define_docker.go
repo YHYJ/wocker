@@ -12,7 +12,6 @@ package general
 import (
 	"context"
 	"io"
-	"os"
 
 	"github.com/docker/docker/client"
 	"github.com/gookit/color"
@@ -52,7 +51,7 @@ func SaveImage(docker *client.Client, imageID string, filename string) error {
 	defer reader.Close()
 
 	// 创建文件
-	file, err := os.Create(filename)
+	file, err := CreateFile(filename)
 	if err != nil {
 		return err
 	}
