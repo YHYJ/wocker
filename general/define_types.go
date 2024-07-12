@@ -9,7 +9,7 @@ Description: 针对特定数据类型的方法
 
 package general
 
-// Contains 判断字符串切片中是否包含指定字符串
+// SliceContains 判断字符串切片中是否包含指定字符串
 //
 // 参数：
 //   - slice: 字符串切片
@@ -17,7 +17,7 @@ package general
 //
 // 返回：
 //   - 布尔值
-func Contains(slice []string, target string) bool {
+func SliceContains(slice []string, target string) bool {
 	for _, str := range slice {
 		if str == target {
 			return true
