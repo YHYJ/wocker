@@ -104,8 +104,15 @@ func SaveImages(names ...string) {
 		imagesMap[image.RepoTags[0]] = strings.Split(image.ID, ":")[1]
 	}
 
-	// 参数 name 允许是 image 的 Repository （以其得到 ID）或 ID
-	if general.Contains(names, "all") {
+	// 如果 names 没有 Tag，以 'latest' 作为默认值
+	for _, name := range names {
+		if !strings.Contains(name, ":") {
+			names = append(names, name+":latest")
+		}
+	}
+
+	// 参数 name 允许是 image 的 Repository 或 ID，如果是 Repository，则获取其对应的 ID，如果为 'all'，则将所有 image 保存到各自 tar 存档文件
+	if general.SliceContains(names, "all") {
 		for imageRepo, imageID := range imagesMap {
 			// 将 image 名中的 ':' 替换为 '_'，'/' 替换为 '-'，再与 ID 前 12 位以 '_' 拼接做为存储文件名
 			filename := color.Sprintf("%s_%s", strings.Replace(strings.Replace(imageRepo, ":", "_", -1), "/", "-", -1), imageID[:idMinViewLength])
@@ -123,7 +130,7 @@ func SaveImages(names ...string) {
 		}
 	} else {
 		for imageRepo, imageID := range imagesMap {
-			if general.Contains(names, imageRepo) || general.FaintContains(names, imageID, idMinSearchLength) {
+			if general.SliceContains(names, imageRepo) || general.FaintContains(names, imageID, idMinSearchLength) {
 				// 将 image 名中的 ':' 替换为 '_'，'/' 替换为 '-'，再与 ID 前 12 位以 '_' 拼接做为存储文件名
 				filename := color.Sprintf("%s_%s", strings.Replace(strings.Replace(imageRepo, ":", "_", -1), "/", "-", -1), imageID[:idMinViewLength])
 
