@@ -101,14 +101,8 @@ func SaveImages(names ...string) {
 	// 生成 map[Repository]ID
 	imagesMap := make(map[string]string)
 	for _, image := range images {
+		// image Repository = 去掉前缀 'sha256' 的 image ID
 		imagesMap[image.RepoTags[0]] = strings.Split(image.ID, ":")[1]
-	}
-
-	// 如果 names 没有 Tag，以 'latest' 作为默认值
-	for _, name := range names {
-		if !strings.Contains(name, ":") {
-			names = append(names, name+":latest")
-		}
 	}
 
 	// 参数 name 允许是 image 的 Repository 或 ID，如果是 Repository，则获取其对应的 ID，如果为 'all'，则将所有 image 保存到各自 tar 存档文件
