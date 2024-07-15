@@ -144,9 +144,18 @@ func SaveImages(names ...string) {
 			color.Printf("- Save %s to %s\n", general.FgBlueText(imageRepo), general.FgLightBlueText(filename))
 		}
 	} else { // 参数为 images 的 Repository(:Tag) 或 ID
-		var status = false // 是否匹配成功
-
+		var (
+			status     = false    // 是否匹配成功
+			saveImages []SaveInfo // 需要保存的 image 信息切片
+		)
 		for _, name := range names {
+			var (
+				imageInfo      ImageInfo   // 匹配成功的 image 信息
+				matchingImages []ImageInfo // 匹配成功的 image 信息切片
+
+				saveImage SaveInfo // 需要保存的 image 信息
+			)
+
 			nameSplit := strings.Split(name, ":")
 			if len(nameSplit) == 2 { // name 是 image Repository:Tag，严格匹配 Repository 和 Tag 都符合的 image
 				nameRepo := nameSplit[0] // 期望 image Repository
@@ -156,86 +165,63 @@ func SaveImages(names ...string) {
 					imageSplit := strings.Split(image.RepoTags[0], ":")        // image Repository and Tag
 					imageID = strings.Split(image.ID, ":")[1]                  // image ID without 'sha256' prefix
 					if imageSplit[0] == nameRepo && imageSplit[1] == nameTag { // 匹配成功
-						imageRepo = imageSplit[0] // image Repository
-						imageTag = imageSplit[1]  // image Tag
-
-						// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
-						filename = color.Sprintf("%s_%s_%s", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
-						status = true
-						break
-					}
-				}
-
-				// 保存 image
-				if status {
-					err = general.SaveImage(docker, imageID, filename)
-					if err != nil {
-						fileName, lineNo := general.GetCallerInfo()
-						color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
-						return
-					}
-					// 输出信息
-					color.Printf("- %s: save to %s\n", general.FgBlueText(imageRepo, ":", imageTag), general.FgLightBlueText(filename))
-				} else {
-					color.Printf("- %s: %s\n", general.FgBlueText(name), general.DangerText(general.ReferenceNotExistMessage))
-				}
-			} else { // name 是 image ID 或 image Repository （这种情况可能因为 Tag 不同匹配到多个）两种情况
-				var (
-					imageInfo      ImageInfo   // 匹配成功的 image 信息
-					matchingImages []ImageInfo // 匹配成功的 image 信息切片
-
-					saveImage  SaveInfo   // 需要保存的 image 信息
-					saveImages []SaveInfo // 需要保存的 image 信息切片
-				)
-				// 遍历 image 列表，查找与 name 对应的 image
-				for _, image := range images {
-					imageSplit := strings.Split(image.RepoTags[0], ":")            // image Repository and Tag
-					imageID = strings.Split(image.ID, ":")[1]                      // image ID without 'sha256' prefix
-					if strings.HasPrefix(imageID, name) || imageSplit[0] == name { // 匹配成功
 						imageInfo.Repo = imageSplit[0] // image Repository
 						imageInfo.Tag = imageSplit[1]  // image Tag
 						imageInfo.ID = imageID
 						matchingImages = append(matchingImages, imageInfo)
 					}
 				}
-
-				// 根据匹配结果输出
-				if len(matchingImages) == 0 {
-					color.Printf("- %s: %s\n", general.FgBlueText(name), general.DangerText(general.NoSuchImageMessage))
-					continue
-				} else {
-					for _, image := range matchingImages {
-						imageRepo = image.Repo
-						imageTag = image.Tag
-						imageID = image.ID
-						// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
-						filename = color.Sprintf("%s_%s_%s", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
-
-						saveImage.ID = imageID
-						saveImage.File = filename
-						saveImage.Tag = imageTag
-						saveImage.Repo = imageRepo
-						saveImages = append(saveImages, saveImage)
+			} else { // name 是 image ID 或 image Repository （这种情况可能因为 Tag 不同匹配到多个）两种情况
+				// 遍历 image 列表，查找与 name 对应的 image
+				for _, image := range images {
+					imageSplit := strings.Split(image.RepoTags[0], ":")            // image Repository and Tag
+					imageID = strings.Split(image.ID, ":")[1]                      // image ID without 'sha256' prefix
+					if imageSplit[0] == name || strings.HasPrefix(imageID, name) { // 匹配成功
+						imageInfo.Repo = imageSplit[0] // image Repository
+						imageInfo.Tag = imageSplit[1]  // image Tag
+						imageInfo.ID = imageID
+						matchingImages = append(matchingImages, imageInfo)
 					}
-					status = true
-				}
-
-				// 保存 image
-				if status {
-					for _, image := range saveImages {
-						err = general.SaveImage(docker, image.ID, image.File)
-						if err != nil {
-							fileName, lineNo := general.GetCallerInfo()
-							color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
-							return
-						}
-						// 输出信息
-						color.Printf("- %s: save to %s\n", general.FgBlueText(image.Repo, ":", image.Tag), general.FgLightBlueText(image.File))
-					}
-				} else {
-					color.Printf("- %s: %s\n", general.FgBlueText(name), general.DangerText(general.ReferenceNotExistMessage))
 				}
 			}
+
+			if len(matchingImages) == 0 {
+				// 没有匹配到 Repository
+				color.Printf("- %s: %s\n", general.FgBlueText(name), general.DangerText(general.NoSuchImageMessage))
+				continue
+			} else {
+				status = true
+				for _, image := range matchingImages {
+					imageRepo = image.Repo
+					imageTag = image.Tag
+					imageID = image.ID
+					// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
+					filename = color.Sprintf("%s_%s_%s", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
+
+					saveImage.ID = imageID
+					saveImage.File = filename
+					saveImage.Tag = imageTag
+					saveImage.Repo = imageRepo
+					saveImages = append(saveImages, saveImage)
+				}
+			}
+
+			if !status {
+				// 没有匹配到 Tag
+				color.Printf("- %s: %s\n", general.FgBlueText(name), general.DangerText(general.ReferenceNotExistMessage))
+			}
+		}
+
+		// 保存 image
+		for _, image := range saveImages {
+			err = general.SaveImage(docker, image.ID, image.File)
+			if err != nil {
+				fileName, lineNo := general.GetCallerInfo()
+				color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
+				return
+			}
+			// 输出信息
+			color.Printf("- %s: save to %s\n", general.FgBlueText(image.Repo, ":", image.Tag), general.FgLightBlueText(image.File))
 		}
 	}
 }
