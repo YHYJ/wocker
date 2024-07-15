@@ -52,13 +52,13 @@ func ListImage() {
 		// 处理原始数据
 		imageRepoTag := strings.Split(image.RepoTags[0], ":")
 		id := strings.Split(image.ID, ":")
-		OriginalSize, sizeUnit := general.Human(float64(image.Size), "B")
+		originalSize, sizeUnit := general.Human(float64(image.Size), "B")
 		// 列数据赋值
 		imageRepo = imageRepoTag[0]
 		imageTag = imageRepoTag[1]
 		imageID = id[1][:idMinViewLength]
 		imageCreated = general.UnixTime2TimeString(image.Created)
-		imageSize = color.Sprintf("%6.1f %s", OriginalSize, sizeUnit)
+		imageSize = color.Sprintf("%6.1f %s", originalSize, sizeUnit)
 		// 组装行数据
 		rowData = []string{imageRepo, imageTag, imageID, imageCreated, imageSize}
 		tableData = append(tableData, rowData)
