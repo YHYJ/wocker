@@ -121,7 +121,7 @@ func SaveImages(names ...string) {
 		imageID   string
 	)
 
-	// 参数 name 允许是 image 的 Repository 或 ID，如果是 Repository，则获取其对应的 ID，如果为 'all'，则将所有 image 保存到各自 tar 存档文件
+	// 参数 name 允许是 image 的 Repository(:Tag), ID 或 'all'，如果为 'all'，则将所有 image 保存到各自 tar 存档文件
 	if general.SliceContains(names, "all") { // 参数为 'all'，将所有 image 保存到各自 tar 存档文件
 		// for imageRepo, imageID := range imagesMap {
 		for _, image := range images {
@@ -144,13 +144,11 @@ func SaveImages(names ...string) {
 			color.Printf("- Save %s to %s\n", general.FgBlueText(imageRepo), general.FgLightBlueText(filename))
 		}
 	} else { // 参数为 images 的 Repository(:Tag) 或 ID
-		var (
-			status = false // 是否匹配成功
-		)
+		var status = false // 是否匹配成功
 
 		for _, name := range names {
 			nameSplit := strings.Split(name, ":")
-			if len(nameSplit) == 2 { // name 是 image Repository:Tag
+			if len(nameSplit) == 2 { // name 是 image Repository:Tag，严格匹配 Repository 和 Tag 都符合的 image
 				nameRepo := nameSplit[0] // 期望 image Repository
 				nameTag := nameSplit[1]  // 期望 image Tag
 				// 遍历 image 列表，查找与 name 对应的 image
