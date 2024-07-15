@@ -115,10 +115,10 @@ func SaveImages(names ...string) {
 
 	// tar 存档文件名及其组成部分
 	var (
-		filename  string
-		imageRepo string
-		imageTag  string
-		imageID   string
+		imageTarFile string
+		imageRepo    string
+		imageTag     string
+		imageID      string
 	)
 
 	// 参数 name 允许是 image 的 Repository(:Tag), ID 或 'all'，如果为 'all'，则将所有 image 保存到各自 tar 存档文件
@@ -130,10 +130,10 @@ func SaveImages(names ...string) {
 			imageTag = imageSplit[1]                  // image Tag
 			imageID = strings.Split(image.ID, ":")[1] // image ID without 'sha256' prefix
 			// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
-			filename = color.Sprintf("%s_%s_%s", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
+			imageTarFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
 
 			// 保存 image
-			err = general.SaveImage(docker, imageID, filename)
+			err = general.SaveImage(docker, imageID, imageTarFile)
 			if err != nil {
 				fileName, lineNo := general.GetCallerInfo()
 				color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
@@ -141,7 +141,7 @@ func SaveImages(names ...string) {
 			}
 
 			// 输出信息
-			color.Printf("- Save %s to %s\n", general.FgBlueText(imageRepo), general.FgLightBlueText(filename))
+			color.Printf("- Save %s to %s\n", general.FgBlueText(imageRepo), general.FgLightBlueText(imageTarFile))
 		}
 	} else { // 参数为 images 的 Repository(:Tag) 或 ID
 		var (
@@ -196,10 +196,10 @@ func SaveImages(names ...string) {
 					imageTag = image.Tag
 					imageID = image.ID
 					// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
-					filename = color.Sprintf("%s_%s_%s", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
+					imageTarFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
 
 					saveImage.ID = imageID
-					saveImage.File = filename
+					saveImage.File = imageTarFile
 					saveImage.Tag = imageTag
 					saveImage.Repo = imageRepo
 					saveImages = append(saveImages, saveImage)
