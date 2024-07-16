@@ -92,10 +92,8 @@ type ImageInfo struct {
 
 // image 保存信息
 type SaveInfo struct {
-	Repo string
-	Tag  string
+	Name string
 	File string
-	ID   string
 }
 
 // SaveImages 将指定 images 保存到各自 tar 存档文件
@@ -162,7 +160,12 @@ func SaveImages(names ...string) {
 				nameTag := nameSplit[1]  // 期望 image Tag
 				// 遍历 image 列表，查找与 name 对应的 image
 				for _, image := range images {
-					imageSplit := strings.Split(image.RepoTags[0], ":")        // image Repository and Tag
+					imageSplit := func() []string { // image Repository and Tag
+						if len(image.RepoTags) == 0 {
+							return []string{"", ""}
+						}
+						return strings.Split(image.RepoTags[0], ":")
+					}()
 					imageID = strings.Split(image.ID, ":")[1]                  // image ID without 'sha256' prefix
 					if imageSplit[0] == nameRepo && imageSplit[1] == nameTag { // 匹配成功
 						imageInfo.Repo = imageSplit[0] // image Repository
@@ -174,7 +177,12 @@ func SaveImages(names ...string) {
 			} else { // name 是 image ID 或 image Repository （这种情况可能因为 Tag 不同匹配到多个）两种情况
 				// 遍历 image 列表，查找与 name 对应的 image
 				for _, image := range images {
-					imageSplit := strings.Split(image.RepoTags[0], ":")            // image Repository and Tag
+					imageSplit := func() []string { // image Repository and Tag
+						if len(image.RepoTags) == 0 {
+							return []string{"", ""}
+						}
+						return strings.Split(image.RepoTags[0], ":")
+					}()
 					imageID = strings.Split(image.ID, ":")[1]                      // image ID without 'sha256' prefix
 					if imageSplit[0] == name || strings.HasPrefix(imageID, name) { // 匹配成功
 						imageInfo.Repo = imageSplit[0] // image Repository
@@ -192,16 +200,17 @@ func SaveImages(names ...string) {
 			} else {
 				status = true
 				for _, image := range matchingImages {
-					imageRepo = image.Repo
-					imageTag = image.Tag
-					imageID = image.ID
-					// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
-					imageTarFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
-
-					saveImage.ID = imageID
-					saveImage.File = imageTarFile
-					saveImage.Tag = imageTag
-					saveImage.Repo = imageRepo
+					if image.Repo == "" {
+						// 将 ID 前 idMinViewLength 位做为存储文件名
+						imageTarFile = color.Sprintf("%s.dockerimage", image.ID[:idMinViewLength])
+						saveImage.Name = image.ID[:idMinViewLength]
+						saveImage.File = imageTarFile
+					} else {
+						// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
+						imageTarFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(image.Repo, "/", "-", -1), image.Tag, image.ID[:idMinViewLength])
+						saveImage.Name = color.Sprintf("%s:%s", image.Repo, image.Tag)
+						saveImage.File = imageTarFile
+					}
 					saveImages = append(saveImages, saveImage)
 				}
 			}
@@ -214,16 +223,16 @@ func SaveImages(names ...string) {
 
 		// 保存 image
 		for _, image := range saveImages {
-			err = general.SaveImage(docker, image.ID, image.File)
+			err = general.SaveImage(docker, image.Name, image.File)
 			if err != nil {
 				fileName, lineNo := general.GetCallerInfo()
 				color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
 				return
 			}
 			// 输出信息
-			color.Printf("- %s: save to %s\n", general.FgBlueText(image.Repo, ":", image.Tag), general.FgLightBlueText(image.File))
+			color.Printf("- %s: save to %s\n", general.FgBlueText(image.Name), general.FgLightBlueText(image.File))
 		}
 	}
 }
 
-func LoadImage(file string) {}
+func LoadImage(files ...string) {}
