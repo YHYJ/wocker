@@ -14,44 +14,9 @@ Notice:
 package general
 
 import (
-	"bufio"
 	"os"
 	"path/filepath"
 )
-
-// ReadFile 依次读取文件每行内容
-//
-// 参数：
-//   - filePath: 文件路径
-//
-// 返回：
-//   - 指定行的内容
-func ReadFile(filePath string) ([]string, error) {
-	// 打开文件
-	text, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer text.Close()
-
-	// 创建一个 Scanner 对象
-	scanner := bufio.NewScanner(text)
-
-	// 存储读取到的每行内容的切片
-	var lines []string
-
-	// 逐行读取文件内容
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-
-	// 检查是否出现了读取错误
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return lines, nil
-}
 
 // FileExist 判断文件是否存在
 //
