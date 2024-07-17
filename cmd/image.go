@@ -18,7 +18,7 @@ import (
 var imageCmd = &cobra.Command{
 	Use:   "image",
 	Short: "Manage docker images",
-	Long:  `Specify or interactively manage daocker images.`,
+	Long:  `Specify or interactively manage docker images.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// 解析参数
 		listFlag, _ := cmd.Flags().GetBool("list")

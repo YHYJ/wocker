@@ -18,7 +18,7 @@ import (
 var volumeCmd = &cobra.Command{
 	Use:   "volume",
 	Short: "Manage docker volumes",
-	Long:  `Specify or interactively manage daocker volumes.`,
+	Long:  `Specify or interactively manage docker volumes.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// 解析参数
 		listFlag, _ := cmd.Flags().GetBool("list")
