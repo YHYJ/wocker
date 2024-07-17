@@ -25,10 +25,10 @@ const (
 	idMinViewLength   = 12 // 用于显示 image ID 的字符串的最小长度
 )
 
+var docker = general.DockerClient()
+
 // ListImage 输出所有 image 的信息
 func ListImage() {
-	docker := general.DockerClient()
-
 	// 获取 image 列表
 	images, err := docker.ImageList(context.Background(), image.ListOptions{All: true})
 	if err != nil {
@@ -99,10 +99,8 @@ type SaveInfo struct {
 // SaveImages 将指定 images 保存到各自 tar 存档文件
 //
 // 参数：
-//   - name: image 的 Repository 或 ID
+//   - names: image 的 Repository 或 ID，允许一次保存多个
 func SaveImages(names ...string) {
-	docker := general.DockerClient()
-
 	// 获取 image 列表
 	images, err := docker.ImageList(context.Background(), image.ListOptions{All: true})
 	if err != nil {
@@ -139,13 +137,11 @@ func SaveImages(names ...string) {
 			}
 
 			// 输出信息
-			color.Printf("- Save %s to %s\n", general.FgBlueText(imageRepo), general.FgLightBlueText(imageTarFile))
+			color.Printf("- Save %s -> %s\n", general.FgBlueText(imageRepo), general.FgMagentaText(imageTarFile))
 		}
 	} else { // 参数为 images 的 Repository(:Tag) 或 ID
-		var (
-			status     = false    // 是否匹配成功
-			saveImages []SaveInfo // 需要保存的 image 信息切片
-		)
+		var saveImages []SaveInfo // 需要保存的 image 信息切片
+
 		for _, name := range names {
 			var (
 				imageInfo      ImageInfo   // 匹配成功的 image 信息
@@ -156,8 +152,9 @@ func SaveImages(names ...string) {
 
 			nameSplit := strings.Split(name, ":")
 			if len(nameSplit) == 2 { // name 是 image Repository:Tag，严格匹配 Repository 和 Tag 都符合的 image
-				nameRepo := nameSplit[0] // 期望 image Repository
-				nameTag := nameSplit[1]  // 期望 image Tag
+				var status bool = false  // 是否匹配成功
+				nameRepo := nameSplit[0] // 期望的 image Repository
+				nameTag := nameSplit[1]  // 期望的 image Tag
 				// 遍历 image 列表，查找与 name 对应的 image
 				for _, image := range images {
 					imageSplit := func() []string { // image Repository and Tag
@@ -167,12 +164,18 @@ func SaveImages(names ...string) {
 						return strings.Split(image.RepoTags[0], ":")
 					}()
 					imageID = strings.Split(image.ID, ":")[1]                  // image ID without 'sha256' prefix
-					if imageSplit[0] == nameRepo && imageSplit[1] == nameTag { // 匹配成功
+					if imageSplit[0] == nameRepo && imageSplit[1] == nameTag { // 匹配到一致的 Repository 和 Tag
 						imageInfo.Repo = imageSplit[0] // image Repository
 						imageInfo.Tag = imageSplit[1]  // image Tag
 						imageInfo.ID = imageID
 						matchingImages = append(matchingImages, imageInfo)
+						status = true
 					}
+				}
+				// 没有匹配到一致的 Repository 和 Tag
+				if !status {
+					color.Printf("- Save %s -> %s\n", general.FgBlueText(name), general.DangerText(general.ReferenceNotExistMessage))
+					continue
 				}
 			} else { // name 是 image ID 或 image Repository （这种情况可能因为 Tag 不同匹配到多个）两种情况
 				// 遍历 image 列表，查找与 name 对应的 image
@@ -184,7 +187,7 @@ func SaveImages(names ...string) {
 						return strings.Split(image.RepoTags[0], ":")
 					}()
 					imageID = strings.Split(image.ID, ":")[1]                      // image ID without 'sha256' prefix
-					if imageSplit[0] == name || strings.HasPrefix(imageID, name) { // 匹配成功
+					if imageSplit[0] == name || strings.HasPrefix(imageID, name) { // 匹配到一致的 Repository 或 ID
 						imageInfo.Repo = imageSplit[0] // image Repository
 						imageInfo.Tag = imageSplit[1]  // image Tag
 						imageInfo.ID = imageID
@@ -195,10 +198,9 @@ func SaveImages(names ...string) {
 
 			if len(matchingImages) == 0 {
 				// 没有匹配到 Repository
-				color.Printf("- %s: %s\n", general.FgBlueText(name), general.DangerText(general.NoSuchImageMessage))
+				color.Printf("- Save %s -> %s\n", general.FgBlueText(name), general.DangerText(general.NoSuchImageMessage))
 				continue
 			} else {
-				status = true
 				for _, image := range matchingImages {
 					if image.Repo == "" {
 						// 将 ID 前 idMinViewLength 位做为存储文件名
@@ -214,11 +216,6 @@ func SaveImages(names ...string) {
 					saveImages = append(saveImages, saveImage)
 				}
 			}
-
-			if !status {
-				// 没有匹配到 Tag
-				color.Printf("- %s: %s\n", general.FgBlueText(name), general.DangerText(general.ReferenceNotExistMessage))
-			}
 		}
 
 		// 保存 image
@@ -230,9 +227,32 @@ func SaveImages(names ...string) {
 				return
 			}
 			// 输出信息
-			color.Printf("- %s: save to %s\n", general.FgBlueText(image.Name), general.FgLightBlueText(image.File))
+			color.Printf("- Save %s -> %s\n", general.FgBlueText(image.Name), general.FgMagentaText(image.File))
 		}
 	}
 }
 
-func LoadImage(files ...string) {}
+// LoadImage 从 tar 存档文件加载 image
+//
+// 参数：
+//   - files: tar 存档文件名，允许一次加载多个
+func LoadImage(files ...string) {
+	for _, file := range files {
+		result, message, err := general.LoadImage(docker, file)
+		if err != nil {
+			fileName, lineNo := general.GetCallerInfo()
+			color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
+			return
+		}
+
+		if result {
+			for _, msg := range message {
+				color.Printf("- Load %s -> %s", general.FgBlueText(file), general.FgMagentaText(strings.Split(msg, ": ")[1]))
+			}
+		} else {
+			for _, msg := range message {
+				color.Printf("- Load %s -> %s\n", general.FgBlueText(file), general.DangerText(msg))
+			}
+		}
+	}
+}
