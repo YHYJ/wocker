@@ -92,11 +92,16 @@ type SaveInfo struct {
 	File string
 }
 
-// SaveImages 将指定 images 保存到各自 tar 存档文件
+// SaveImages 将指定 images 保存到各自存档文件
 //
 // 参数：
 //   - names: image 的 Repository 或 ID，允许一次保存多个
 func SaveImages(names []string) {
+	if len(names) == 0 {
+		color.Printf(general.DangerText(general.SpecifyMessage), "image", "save")
+		return
+	}
+
 	// 获取 image 列表
 	images, err := general.ListImages()
 	if err != nil {
@@ -105,27 +110,26 @@ func SaveImages(names []string) {
 		return
 	}
 
-	// tar 存档文件名及其组成部分
+	// 存档文件名及其组成部分
 	var (
-		imageTarFile string
-		imageRepo    string
-		imageTag     string
-		imageID      string
+		imageRepo        string
+		imageTag         string
+		imageID          string
+		imageArchiveFile string
 	)
 
-	// 参数 name 允许是 image 的 Repository(:Tag), ID 或 'all'，如果为 'all'，则将所有 image 保存到各自 tar 存档文件
-	if general.SliceContains(names, "all") { // 参数中包含 'all'，将所有 image 保存到各自 tar 存档文件
-		// for imageRepo, imageID := range imagesMap {
+	// 参数 names 允许是 image 的 Repository(:Tag), ID 或 'all'
+	if general.SliceContains(names, "all") { // 参数中包含 'all'，将所有 image 保存到各自存档文件
 		for _, image := range images {
 			imageSplit := strings.Split(image.RepoTags[0], ":")
 			imageRepo = imageSplit[0]                 // image Repository
 			imageTag = imageSplit[1]                  // image Tag
 			imageID = strings.Split(image.ID, ":")[1] // image ID without 'sha256' prefix
 			// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
-			imageTarFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
+			imageArchiveFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
 
 			// 保存 image
-			err = general.SaveImage(imageID, imageTarFile)
+			err = general.SaveImage(imageID, imageArchiveFile)
 			if err != nil {
 				fileName, lineNo := general.GetCallerInfo()
 				color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
@@ -133,9 +137,9 @@ func SaveImages(names []string) {
 			}
 
 			// 输出信息
-			color.Printf("- Save %s -> %s\n", general.FgBlueText(imageRepo), general.FgMagentaText(imageTarFile))
+			color.Printf("- Save %s -> %s\n", general.FgBlueText(imageRepo), general.FgMagentaText(imageArchiveFile))
 		}
-	} else { // 参数为 images 的 Repository(:Tag) 或 ID
+	} else { // 参数为 image 的 Repository(:Tag) 或 ID
 		var saveImages []SaveInfo // 需要保存的 image 信息切片
 
 		for _, name := range names {
@@ -200,14 +204,14 @@ func SaveImages(names []string) {
 				for _, image := range matchingImages {
 					if image.Repo == "" {
 						// 将 ID 前 idMinViewLength 位做为存储文件名
-						imageTarFile = color.Sprintf("%s.dockerimage", image.ID[:idMinViewLength])
+						imageArchiveFile = color.Sprintf("%s.dockerimage", image.ID[:idMinViewLength])
 						saveImage.Name = image.ID[:idMinViewLength]
-						saveImage.File = imageTarFile
+						saveImage.File = imageArchiveFile
 					} else {
 						// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
-						imageTarFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(image.Repo, "/", "-", -1), image.Tag, image.ID[:idMinViewLength])
+						imageArchiveFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(image.Repo, "/", "-", -1), image.Tag, image.ID[:idMinViewLength])
 						saveImage.Name = color.Sprintf("%s:%s", image.Repo, image.Tag)
-						saveImage.File = imageTarFile
+						saveImage.File = imageArchiveFile
 					}
 					saveImages = append(saveImages, saveImage)
 				}
@@ -228,11 +232,16 @@ func SaveImages(names []string) {
 	}
 }
 
-// LoadImages 从 tar 存档文件加载 image
+// LoadImages 从存档文件加载 image
 //
 // 参数：
-//   - files: tar 存档文件名，允许一次加载多个
+//   - files: 存档文件名，允许一次加载多个
 func LoadImages(files []string) {
+	if len(files) == 0 {
+		color.Printf(general.DangerText(general.SpecifyMessage), "image archive file", "load")
+		return
+	}
+
 	for _, file := range files {
 		result, message, err := general.LoadImage(file)
 		if err != nil {
