@@ -26,15 +26,15 @@ var volumeCmd = &cobra.Command{
 		loadFlag, _ := cmd.Flags().GetBool("load")
 
 		if listFlag {
-			cli.ListVolume()
+			cli.ListVolumes()
 		}
 
 		if saveFlag {
-			cli.SaveVolume(args)
+			cli.SaveVolumes(args)
 		}
 
 		if loadFlag {
-			cli.LoadVolume(args[0])
+			cli.LoadVolumes(args)
 		}
 	},
 }

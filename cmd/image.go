@@ -26,15 +26,15 @@ var imageCmd = &cobra.Command{
 		loadFlag, _ := cmd.Flags().GetBool("load")
 
 		if listFlag {
-			cli.ListImage()
+			cli.ListImages()
 		}
 
 		if saveFlag {
-			cli.SaveImages(args...)
+			cli.SaveImages(args)
 		}
 
 		if loadFlag {
-			cli.LoadImage(args...)
+			cli.LoadImages(args)
 		}
 	},
 }

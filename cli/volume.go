@@ -19,7 +19,8 @@ import (
 	"github.com/yhyj/wocker/general"
 )
 
-func ListVolume() {
+// ListVolumes 输出所有 volume 的信息
+func ListVolumes() {
 	docker := general.DockerClient()
 
 	// 获取 volume 列表
@@ -68,6 +69,14 @@ func ListVolume() {
 	color.Println(dataTable)
 }
 
-func SaveVolume(name []string) {}
+// SaveVolumes 将指定 volumes 保存到各自 tar 存档文件
+//
+// 参数：
+//   - names: volume name，允许一次保存多个
+func SaveVolumes(names []string) {}
 
-func LoadVolume(file string) {}
+// LoadVolumes 从 tar 存档文件加载 volume
+//
+// 参数：
+//   - files: tar 存档文件名，允许一次加载多个
+func LoadVolumes(files []string) {}

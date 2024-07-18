@@ -27,8 +27,8 @@ const (
 
 var docker = general.DockerClient()
 
-// ListImage 输出所有 image 的信息
-func ListImage() {
+// ListImages 输出所有 image 的信息
+func ListImages() {
 	// 获取 image 列表
 	images, err := docker.ImageList(context.Background(), image.ListOptions{All: true})
 	if err != nil {
@@ -100,7 +100,7 @@ type SaveInfo struct {
 //
 // 参数：
 //   - names: image 的 Repository 或 ID，允许一次保存多个
-func SaveImages(names ...string) {
+func SaveImages(names []string) {
 	// 获取 image 列表
 	images, err := docker.ImageList(context.Background(), image.ListOptions{All: true})
 	if err != nil {
@@ -118,7 +118,7 @@ func SaveImages(names ...string) {
 	)
 
 	// 参数 name 允许是 image 的 Repository(:Tag), ID 或 'all'，如果为 'all'，则将所有 image 保存到各自 tar 存档文件
-	if general.SliceContains(names, "all") { // 参数为 'all'，将所有 image 保存到各自 tar 存档文件
+	if general.SliceContains(names, "all") { // 参数中包含 'all'，将所有 image 保存到各自 tar 存档文件
 		// for imageRepo, imageID := range imagesMap {
 		for _, image := range images {
 			imageSplit := strings.Split(image.RepoTags[0], ":")
@@ -232,11 +232,11 @@ func SaveImages(names ...string) {
 	}
 }
 
-// LoadImage 从 tar 存档文件加载 image
+// LoadImages 从 tar 存档文件加载 image
 //
 // 参数：
 //   - files: tar 存档文件名，允许一次加载多个
-func LoadImage(files ...string) {
+func LoadImages(files []string) {
 	for _, file := range files {
 		result, message, err := general.LoadImage(docker, file)
 		if err != nil {
