@@ -11,6 +11,7 @@ package cli
 
 import (
 	"os"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
@@ -56,6 +57,8 @@ func ListVolumes() {
 	color.Println(dataTable)
 }
 
+const archiveFileExtension = ".tar.gz" // volume 存档文件扩展名
+
 // SaveVolumes 将指定 volumes 保存到各自存档文件
 //
 // 参数：
@@ -74,7 +77,7 @@ func SaveVolumes(names []string) {
 		return
 	}
 
-	// 获取所有 volume 名称
+	// 获取当前所有 volume 名称
 	var volumeNames []string
 	for _, volume := range volumes.Volumes {
 		volumeNames = append(volumeNames, volume.Name)
@@ -91,7 +94,7 @@ func SaveVolumes(names []string) {
 	// 参数 names 允许是 volume 的 Name 或 'all'
 	if general.SliceContains(names, "all") { // 参数中包含 'all'，将所有 volume 保存到各自存档文件
 		for _, volumeName := range volumeNames {
-			volumeArchiveFile := color.Sprintf("%s.tar.gz", volumeName)
+			volumeArchiveFile := color.Sprintf("%s%s", volumeName, archiveFileExtension)
 			if err := general.SaveVolume(volumeName, currentDir, volumeArchiveFile); err != nil {
 				fileName, lineNo := general.GetCallerInfo()
 				color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
@@ -106,7 +109,7 @@ func SaveVolumes(names []string) {
 				color.Printf("- Save %s -> %s\n", general.FgBlueText(name), general.DangerText(general.NoSuchVolumeMessage))
 				continue
 			}
-			volumeArchiveFile := color.Sprintf("%s.tar.gz", name)
+			volumeArchiveFile := color.Sprintf("%s%s", name, archiveFileExtension)
 			if err := general.SaveVolume(name, currentDir, volumeArchiveFile); err != nil {
 				fileName, lineNo := general.GetCallerInfo()
 				color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
@@ -126,5 +129,51 @@ func LoadVolumes(files []string) {
 	if len(files) == 0 {
 		color.Printf(general.DangerText(general.SpecifyMessage), "volume archive file", "load")
 		return
+	}
+
+	// 获取 volume 列表
+	volumes, err := general.ListVolumes()
+	if err != nil {
+		fileName, lineNo := general.GetCallerInfo()
+		color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
+		return
+	}
+
+	// 获取当前所有 volume 名称
+	var volumeNames []string
+	for _, volume := range volumes.Volumes {
+		volumeNames = append(volumeNames, volume.Name)
+	}
+
+	// 获取当前目录
+	currentDir, err := os.Getwd()
+	if err != nil {
+		fileName, lineNo := general.GetCallerInfo()
+		color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
+		return
+	}
+
+	for _, file := range files {
+		// 排除非存档文件
+		if !strings.HasSuffix(file, archiveFileExtension) {
+			color.Printf("- Load %s -> %s\n", general.FgBlueText(file), general.DangerText(general.NotVolumeArchiveMessage))
+			continue
+		}
+
+		volumeName := strings.Split(file, archiveFileExtension)[0]
+
+		// 排除已存在的 volume
+		if general.SliceContains(volumeNames, volumeName) {
+			color.Printf("- Load %s -> %s\n", general.FgBlueText(file), general.DangerText(general.VolumeExistMessage))
+			continue
+		}
+
+		if err := general.LoadVolume(volumeName, currentDir, file); err != nil {
+			fileName, lineNo := general.GetCallerInfo()
+			color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
+			return
+		}
+		// 输出信息
+		color.Printf("- Load %s -> %s\n", general.FgBlueText(file), general.FgMagentaText(file))
 	}
 }
