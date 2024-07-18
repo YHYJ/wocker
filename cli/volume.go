@@ -10,21 +10,16 @@ Description: 子命令 'volume' 的实现
 package cli
 
 import (
-	"context"
-
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
-	"github.com/docker/docker/api/types/volume"
 	"github.com/gookit/color"
 	"github.com/yhyj/wocker/general"
 )
 
 // ListVolumes 输出所有 volume 的信息
 func ListVolumes() {
-	docker := general.DockerClient()
-
 	// 获取 volume 列表
-	volumes, err := docker.VolumeList(context.Background(), volume.ListOptions{})
+	volumes, err := general.ListVolumes()
 	if err != nil {
 		fileName, lineNo := general.GetCallerInfo()
 		color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)

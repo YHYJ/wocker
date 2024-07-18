@@ -10,12 +10,10 @@ Description: 子命令 'image' 的实现
 package cli
 
 import (
-	"context"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
-	"github.com/docker/docker/api/types/image"
 	"github.com/gookit/color"
 	"github.com/yhyj/wocker/general"
 )
@@ -25,12 +23,10 @@ const (
 	idMinViewLength   = 12 // 用于显示 image ID 的字符串的最小长度
 )
 
-var docker = general.DockerClient()
-
 // ListImages 输出所有 image 的信息
 func ListImages() {
 	// 获取 image 列表
-	images, err := docker.ImageList(context.Background(), image.ListOptions{All: true})
+	images, err := general.ListImages()
 	if err != nil {
 		fileName, lineNo := general.GetCallerInfo()
 		color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
@@ -102,7 +98,7 @@ type SaveInfo struct {
 //   - names: image 的 Repository 或 ID，允许一次保存多个
 func SaveImages(names []string) {
 	// 获取 image 列表
-	images, err := docker.ImageList(context.Background(), image.ListOptions{All: true})
+	images, err := general.ListImages()
 	if err != nil {
 		fileName, lineNo := general.GetCallerInfo()
 		color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
@@ -129,7 +125,7 @@ func SaveImages(names []string) {
 			imageTarFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
 
 			// 保存 image
-			err = general.SaveImage(docker, imageID, imageTarFile)
+			err = general.SaveImage(imageID, imageTarFile)
 			if err != nil {
 				fileName, lineNo := general.GetCallerInfo()
 				color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
@@ -220,7 +216,7 @@ func SaveImages(names []string) {
 
 		// 保存 image
 		for _, image := range saveImages {
-			err = general.SaveImage(docker, image.Name, image.File)
+			err = general.SaveImage(image.Name, image.File)
 			if err != nil {
 				fileName, lineNo := general.GetCallerInfo()
 				color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
@@ -238,7 +234,7 @@ func SaveImages(names []string) {
 //   - files: tar 存档文件名，允许一次加载多个
 func LoadImages(files []string) {
 	for _, file := range files {
-		result, message, err := general.LoadImage(docker, file)
+		result, message, err := general.LoadImage(file)
 		if err != nil {
 			fileName, lineNo := general.GetCallerInfo()
 			color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
