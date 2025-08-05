@@ -137,7 +137,7 @@ func SaveImages(names []string) {
 			}
 
 			// 输出信息
-			color.Printf("- Save %s -> %s\n", general.FgBlueText(imageRepo), general.FgMagentaText(imageArchiveFile))
+			color.Printf("%s Save %s -> %s\n", general.PackFlag, general.FgBlueText(imageRepo), general.FgMagentaText(imageArchiveFile))
 		}
 	} else { // 参数为 image 的 Repository(:Tag) 或 ID
 		var saveImages []SaveInfo // 需要保存的 image 信息切片
@@ -174,7 +174,7 @@ func SaveImages(names []string) {
 				}
 				// 没有匹配到一致的 Repository 和 Tag
 				if !status {
-					color.Printf("- Save %s -> %s\n", general.FgBlueText(name), general.DangerText(general.ReferenceNotExistMessage))
+					color.Printf("%s Save %s -> %s\n", general.PackFlag, general.FgBlueText(name), general.DangerText(general.ReferenceNotExistMessage))
 					continue
 				}
 			} else { // name 是 image ID 或 image Repository （这种情况可能因为 Tag 不同匹配到多个）两种情况
@@ -198,7 +198,7 @@ func SaveImages(names []string) {
 
 			if len(matchingImages) == 0 {
 				// 没有匹配到 Repository
-				color.Printf("- Save %s -> %s\n", general.FgBlueText(name), general.DangerText(general.NoSuchImageMessage))
+				color.Printf("%s Save %s -> %s\n", general.PackFlag, general.FgBlueText(name), general.DangerText(general.NoSuchImageMessage))
 				continue
 			} else {
 				for _, image := range matchingImages {
@@ -227,7 +227,7 @@ func SaveImages(names []string) {
 				return
 			}
 			// 输出信息
-			color.Printf("- Save %s -> %s\n", general.FgBlueText(image.Name), general.FgMagentaText(image.File))
+			color.Printf("%s Save %s -> %s\n", general.PackFlag, general.FgBlueText(image.Name), general.FgMagentaText(image.File))
 		}
 	}
 }
@@ -252,11 +252,11 @@ func LoadImages(files []string) {
 
 		if result {
 			for _, msg := range message {
-				color.Printf("- Load %s -> %s", general.FgBlueText(file), general.FgMagentaText(strings.Split(msg, ": ")[1]))
+				color.Printf("%s Load %s -> %s", general.LoadFlag, general.FgBlueText(file), general.FgMagentaText(strings.Split(msg, ": ")[1]))
 			}
 		} else {
 			for _, msg := range message {
-				color.Printf("- Load %s -> %s\n", general.FgBlueText(file), general.DangerText(msg))
+				color.Printf("%s Load %s -> %s\n", general.LoadFlag, general.FgBlueText(file), general.DangerText(msg))
 			}
 		}
 	}

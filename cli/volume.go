@@ -101,12 +101,12 @@ func SaveVolumes(names []string) {
 				return
 			}
 			// 输出信息
-			color.Printf("- Save %s -> %s\n", general.FgBlueText(volumeName), general.FgMagentaText(volumeArchiveFile))
+			color.Printf("%s Save %s -> %s\n", general.PackFlag, general.FgBlueText(volumeName), general.FgMagentaText(volumeArchiveFile))
 		}
 	} else { // 参数为 volume 的 Name
 		for _, name := range names {
 			if !general.SliceContains(volumeNames, name) {
-				color.Printf("- Save %s -> %s\n", general.FgBlueText(name), general.DangerText(general.NoSuchVolumeMessage))
+				color.Printf("%s Save %s -> %s\n", general.PackFlag, general.FgBlueText(name), general.DangerText(general.NoSuchVolumeMessage))
 				continue
 			}
 			volumeArchiveFile := color.Sprintf("%s%s", name, archiveFileExtension)
@@ -116,7 +116,7 @@ func SaveVolumes(names []string) {
 				return
 			}
 			// 输出信息
-			color.Printf("- Save %s -> %s\n", general.FgBlueText(name), general.FgMagentaText(volumeArchiveFile))
+			color.Printf("%s Save %s -> %s\n", general.PackFlag, general.FgBlueText(name), general.FgMagentaText(volumeArchiveFile))
 		}
 	}
 }
@@ -156,7 +156,7 @@ func LoadVolumes(files []string) {
 	for _, file := range files {
 		// 排除非存档文件
 		if !strings.HasSuffix(file, archiveFileExtension) {
-			color.Printf("- Load %s -> %s\n", general.FgBlueText(file), general.DangerText(general.NotVolumeArchiveMessage))
+			color.Printf("%s Load %s -> %s\n", general.LoadFlag, general.FgBlueText(file), general.DangerText(general.NotVolumeArchiveMessage))
 			continue
 		}
 
@@ -164,7 +164,7 @@ func LoadVolumes(files []string) {
 
 		// 排除已存在的 volume
 		if general.SliceContains(volumeNames, volumeName) {
-			color.Printf("- Load %s -> %s\n", general.FgBlueText(file), general.DangerText(general.VolumeExistMessage))
+			color.Printf("%s Load %s -> %s\n", general.LoadFlag, general.FgBlueText(file), general.DangerText(general.VolumeExistMessage))
 			continue
 		}
 
@@ -174,6 +174,6 @@ func LoadVolumes(files []string) {
 			return
 		}
 		// 输出信息
-		color.Printf("- Load %s -> %s\n", general.FgBlueText(file), general.FgMagentaText(file))
+		color.Printf("%s Load %s -> %s\n", general.LoadFlag, general.FgBlueText(file), general.FgMagentaText(file))
 	}
 }
