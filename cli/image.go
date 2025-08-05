@@ -19,8 +19,7 @@ import (
 )
 
 const (
-	idMinSearchLength = 4  // 用于查找 image ID 的字符串的最小长度
-	idMinViewLength   = 12 // 用于显示 image ID 的字符串的最小长度
+	idMinViewLength = 12 // 用于显示 image ID 的字符串的最小长度
 )
 
 // ListImages 输出所有 image 的信息
