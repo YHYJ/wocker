@@ -249,12 +249,12 @@ func LoadVolume(newVolumeName string, filePath string, archiveFile string) error
 //   - docker 客户端
 func dockerClient() *client.Client {
 	docker, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	defer docker.Close()
 
 	if err != nil {
 		fileName, lineNo := GetCallerInfo()
 		color.Printf("%s %s %s\n", DangerText(ErrorInfoFlag), SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
 	}
+	defer docker.Close()
 
 	return docker
 }
