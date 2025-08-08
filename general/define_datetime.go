@@ -21,3 +21,20 @@ import "time"
 func UnixTime2TimeString(unixTime int64) string {
 	return time.Unix(unixTime, 0).Format("2006-01-02 15:04:05")
 }
+
+// GetCurrentTimestamp 获取当前时间戳
+//
+// 参数：
+//   - format: 时间格式，例如 "20060102150405"（Go 参考时间）
+//
+// 返回：
+//   - 当前时间戳
+func GetCurrentTimestamp(format string) string {
+	// 获取当前时间
+	now := time.Now()
+
+	// 格式化为 YYYYMMDDHHMMSS
+	timestamp := now.Format(format)
+
+	return timestamp
+}

@@ -125,7 +125,7 @@ func SaveImages(names []string) {
 			imageTag = imageSplit[1]                  // image Tag
 			imageID = strings.Split(image.ID, ":")[1] // image ID without 'sha256' prefix
 			// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
-			imageArchiveFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(imageRepo, "/", "-", -1), imageTag, imageID[:idMinViewLength])
+			imageArchiveFile = color.Sprintf("%s_%s_%s.dockerimage", strings.ReplaceAll(imageRepo, "/", "-"), imageTag, imageID[:idMinViewLength])
 
 			// 保存 image
 			err = general.SaveImage(imageID, imageArchiveFile)
@@ -208,7 +208,7 @@ func SaveImages(names []string) {
 						saveImage.File = imageArchiveFile
 					} else {
 						// 将 image Repository 中的 '/' 替换为 '-'，再与 Tag 以及 ID 前 idMinViewLength 位以 '_' 拼接做为存储文件名
-						imageArchiveFile = color.Sprintf("%s_%s_%s.dockerimage", strings.Replace(image.Repo, "/", "-", -1), image.Tag, image.ID[:idMinViewLength])
+						imageArchiveFile = color.Sprintf("%s_%s_%s.dockerimage", strings.ReplaceAll(image.Repo, "/", "-"), image.Tag, image.ID[:idMinViewLength])
 						saveImage.Name = color.Sprintf("%s:%s", image.Repo, image.Tag)
 						saveImage.File = imageArchiveFile
 					}
