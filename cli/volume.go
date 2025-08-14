@@ -57,7 +57,7 @@ func ListVolumes() {
 	color.Println(dataTable)
 }
 
-var timestamp = general.GetCurrentTimestamp("20060102150405") // 存档文件时间戳
+var identity = "volume"
 
 const archiveFileExtension = ".tar.gz" // volume 存档文件扩展名
 
@@ -96,7 +96,7 @@ func SaveVolumes(names []string) {
 	// 参数 names 允许是 volume 的 Name 或 'all'
 	if general.SliceContains(names, "all") { // 参数中包含 'all'，将所有 volume 保存到各自存档文件
 		for _, volumeName := range volumeNames {
-			volumeArchiveFile := color.Sprintf("%s_%s%s", volumeName, timestamp, archiveFileExtension)
+			volumeArchiveFile := color.Sprintf("%s_%s%s", volumeName, identity, archiveFileExtension)
 			if err := general.SaveVolume(volumeName, currentDir, volumeArchiveFile); err != nil {
 				fileName, lineNo := general.GetCallerInfo()
 				color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
@@ -111,7 +111,7 @@ func SaveVolumes(names []string) {
 				color.Printf("%s Save %s -> %s\n", general.PackFlag, general.FgBlueText(name), general.DangerText(general.NoSuchVolumeMessage))
 				continue
 			}
-			volumeArchiveFile := color.Sprintf("%s_%s%s", name, timestamp, archiveFileExtension)
+			volumeArchiveFile := color.Sprintf("%s_%s%s", name, identity, archiveFileExtension)
 			if err := general.SaveVolume(name, currentDir, volumeArchiveFile); err != nil {
 				fileName, lineNo := general.GetCallerInfo()
 				color.Printf("%s %s %s\n", general.DangerText(general.ErrorInfoFlag), general.SecondaryText("[", fileName, ":", lineNo+1, "]"), err)
