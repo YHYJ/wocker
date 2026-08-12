@@ -45,7 +45,12 @@ func ListImages() {
 	rowData := []string{}                                                 // 行数据
 	for _, image := range images {
 		// 处理原始数据
-		imageRepoTag := strings.Split(image.RepoTags[0], ":")
+		imageRepoTag := func() []string { // image Repository and Tag
+			if len(image.RepoTags) == 0 {
+				return []string{"", ""}
+			}
+			return strings.Split(image.RepoTags[0], ":")
+		}()
 		id := strings.Split(image.ID, ":")
 		originalSize, sizeUnit := general.Human(float64(image.Size), "B")
 		// 列数据赋值
@@ -120,7 +125,12 @@ func SaveImages(names []string) {
 	// 参数 names 允许是 image 的 Repository(:Tag), ID 或 'all'
 	if general.SliceContains(names, "all") { // 参数中包含 'all'，将所有 image 保存到各自存档文件
 		for _, image := range images {
-			imageSplit := strings.Split(image.RepoTags[0], ":")
+			imageSplit := func() []string { // image Repository and Tag
+				if len(image.RepoTags) == 0 {
+					return []string{"", ""}
+				}
+				return strings.Split(image.RepoTags[0], ":")
+			}()
 			imageRepo = imageSplit[0]                 // image Repository
 			imageTag = imageSplit[1]                  // image Tag
 			imageID = strings.Split(image.ID, ":")[1] // image ID without 'sha256' prefix
